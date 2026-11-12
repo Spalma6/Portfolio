@@ -1,6 +1,5 @@
-import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
-
+import bcrypt from "bcryptjs";
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -14,18 +13,23 @@ const UserSchema = new mongoose.Schema({
     match: [/.+\@.+\..+/, "Please fill a valid email address"],
     required: "Email is required",
   },
-  createdDate: {
+  created: {
     type: Date,
     default: Date.now,
   },
-  updatedDate: {
+  updated: {
     type: Date,
     default: Date.now,
   },
   hashed_password: {
     type: String,
     required: "Password is required",
-    select: false,
+  },
+  salt: String,
+  role: {
+    type: String,
+    enum: ["user", "admin"],
+    default: "user",
   },
 });
 
@@ -37,8 +41,7 @@ UserSchema.virtual("password")
   .get(function () {
     return this._password;
   });
-
-UserSchema.path("hashed_password").validate(function () {
+UserSchema.path("hashed_password").validate(function (v) {
   if (this._password && this._password.length < 6) {
     this.invalidate("password", "Password must be at least 6 characters.");
   }
@@ -52,13 +55,10 @@ UserSchema.pre("save", async function () {
   this.hashed_password = await bcrypt.hash(this.hashed_password, 12);
 });
 
-UserSchema.set("toJSON", {
-  transform: (_doc, returnedUser) => {
-    delete returnedUser.hashed_password;
-    delete returnedUser.salt;
-    delete returnedUser._password;
-    return returnedUser;
+UserSchema.methods = {
+  authenticate: function (plainText) {
+    return Boolean(plainText) && bcrypt.compareSync(plainText, this.hashed_password);
   },
-});
+};
 
 export default mongoose.model("User", UserSchema);

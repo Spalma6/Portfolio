@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../src/useAuth";
 
 export default function Layout({ children }) {
+  const { user, isAdmin, signOut } = useAuth();
+
   return (
     <div className="site-shell">
       <header className="site-header">
@@ -14,6 +17,8 @@ export default function Layout({ children }) {
           <Link to="/project">Projects</Link>
           <Link to="/education">Education</Link>
           <Link to="/services">Services</Link>
+          {isAdmin && <Link to="/admin">Admin</Link>}
+          {user ? <button className="nav-button" type="button" onClick={signOut}>Sign out</button> : <Link to="/signin">Sign in</Link>}
           <Link className="nav-contact" to="/contact">Let's talk <span>↗</span></Link>
         </nav>
       </header>
