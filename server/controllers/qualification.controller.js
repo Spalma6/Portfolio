@@ -3,6 +3,6 @@ import createResourceController from "./resource.controller.js";
 
 export default createResourceController({
   Model: Qualification,
-  fields: ["title", "completionDate", "description"],
+  fields: ["title", "completionDate", "cred", "type", "description"],
   resourceName: "Qualification",
 });
